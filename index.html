@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cerca Viaggi</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Cerca<span>Viaggi</span></div>
+  </header>
+
+  <main class="container">
+    <section class="search-card">
+      <h1>Trova il tuo prossimo viaggio</h1>
+      <p class="subtitle">Salva e cerca idee di viaggio da qualsiasi dispositivo.</p>
+
+      <form id="trip-form" class="form-grid">
+
+  <div class="form-group">
+    <label for="destination">Destinazione</label>
+    <input type="text" id="destination" placeholder="Es. Tokyo, Parigi..." required />
+  </div>
+
+  <div class="form-group">
+    <label for="date">Periodo</label>
+    <input type="text" id="date" placeholder="Es. Agosto 2026" />
+  </div>
+
+  <div class="form-group">
+    <label for="time">Orari volo</label>
+    <input type="text" id="time" placeholder="Es. 10:30 - 14:00" />
+  </div>
+
+  <div class="form-group">
+    <label for="airline">Compagnia aerea</label>
+    <input type="text" id="airline" placeholder="Es. Emirates, Qatar..." />
+  </div>
+
+  <div class="form-group">
+    <label for="flightPrice">Prezzo volo (€)</label>
+    <input type="number" id="flightPrice" min="0" placeholder="Es. 650" />
+  </div>
+
+  <div class="form-group">
+    <label for="hotel">Hotel</label>
+    <input type="text" id="hotel" placeholder="Es. Hilton Tokyo" />
+  </div>
+
+  <div class="form-group">
+    <label for="hotelPrice">Prezzo hotel (€)</label>
+    <input type="number" id="hotelPrice" min="0" placeholder="Es. 1200" />
+  </div>
+
+  <div class="form-group full">
+    <label for="notes">Note</label>
+    <textarea id="notes" rows="2" placeholder="Appunti, idee, voli, hotel..."></textarea>
+  </div>
+
+  <button type="submit" class="btn-primary full">Salva viaggio</button>
+</form>
+
+      </form>
+    </section>
+
+    <section class="search-card">
+      <h2>Cerca tra i tuoi viaggi</h2>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="Filtra per destinazione..."
+      />
+    </section>
+
+    <section class="trips-list" id="trips-list">
+      <!-- Le card dei viaggi verranno inserite qui da JS -->
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Made with MP & Firebase · Deploy on Github Pages</span>
+  </footer>
+
+  <!-- Firebase SDK v9 (modular) -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
