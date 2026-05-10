@@ -1,10 +1,8 @@
-// app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore,
   collection,
   addDoc,
-  getDocs,
   onSnapshot,
   query,
   orderBy,
@@ -12,7 +10,6 @@ import {
   doc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// 🔧 Sostituisci con la tua config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDmcL2ckq11873STfhRkcKE2Meb12KV3JU",
   authDomain: "cercaviaggimp.firebaseapp.com",
@@ -26,141 +23,141 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const tripsCol = collection(db, "trips");
 
-// Elementi DOM
+// DOM
 const tripForm = document.getElementById("trip-form");
 const tripsList = document.getElementById("trips-list");
 const searchInput = document.getElementById("search-input");
+const themeToggle = document.getElementById("themeToggle");
+const exportBtn = document.getElementById("exportBtn");
+const toast = document.getElementById("toast");
 
 let allTrips = [];
 
-// Render singola card viaggio
+/* ------------------ TOAST ------------------ */
+function showToast(message, type = "success") {
+  toast.textContent = message;
+  toast.className = `toast show ${type}`;
+  setTimeout(() => (toast.className = "toast"), 3000);
+}
+
+/* ------------------ THEME ------------------ */
+function loadTheme() {
+  const saved = localStorage.getItem("theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
+  themeToggle.textContent = saved === "dark" ? "🌙" : "☀️";
+}
+
+themeToggle.addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
+  themeToggle.textContent = next === "dark" ? "🌙" : "☀️";
+});
+
+loadTheme();
+
+/* ------------------ EXPORT ------------------ */
+exportBtn.addEventListener("click", () => {
+  const data = JSON.stringify(allTrips, null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "viaggi.json";
+  a.click();
+
+  showToast("Esportazione completata!");
+});
+
+/* ------------------ RENDER CARD ------------------ */
 function renderTripCard(trip) {
   const card = document.createElement("article");
   card.className = "trip-card";
-  card.dataset.id = trip.id;
 
   card.innerHTML = `
     <div class="trip-header">
-      <div class="trip-destination">${trip.destination || "Senza destinazione"}</div>
+      <div class="trip-destination">${trip.destination}</div>
       <span class="trip-badge">Salvato</span>
     </div>
+
     <div class="trip-meta">
       ${trip.date ? `<span>Periodo: ${trip.date}</span>` : ""}
-      ${trip.budget ? ` · <span>Budget: €${trip.budget}</span>` : ""}
+      ${trip.time ? `<span>Orari volo: ${trip.time}</span>` : ""}
+      ${trip.airline ? `<span>Compagnia: ${trip.airline}</span>` : ""}
+      ${trip.flightPrice ? `<span>Volo: €${trip.flightPrice}</span>` : ""}
+      ${trip.hotel ? `<span>Hotel: ${trip.hotel}</span>` : ""}
+      ${trip.hotelPrice ? `<span>Hotel: €${trip.hotelPrice}</span>` : ""}
     </div>
-    ${
-      trip.notes
-        ? `<p class="trip-notes">${trip.notes}</p>`
-        : `<p class="trip-notes" style="opacity:.7;">Nessuna nota aggiunta.</p>`
-    }
+
+    <p class="trip-notes">${trip.notes || "Nessuna nota."}</p>
+
     <div class="trip-actions">
-      <button class="btn-delete" data-id="${trip.id}">
-        <span>✕</span> Elimina
-      </button>
+      <button class="btn-delete" data-id="${trip.id}">✕ Elimina</button>
     </div>
   `;
 
-  const deleteBtn = card.querySelector(".btn-delete");
-  deleteBtn.addEventListener("click", async () => {
-    try {
-      await deleteDoc(doc(db, "trips", trip.id));
-    } catch (err) {
-      console.error("Errore eliminazione:", err);
-      alert("Errore durante l'eliminazione del viaggio.");
-    }
+  card.querySelector(".btn-delete").addEventListener("click", async () => {
+    await deleteDoc(doc(db, "trips", trip.id));
+    showToast("Viaggio eliminato", "warning");
   });
 
   return card;
 }
 
-// Render lista filtrata
-function renderTrips(filterText = "") {
+/* ------------------ RENDER LISTA ------------------ */
+function renderTrips(filter = "") {
   tripsList.innerHTML = "";
 
-  const normalized = filterText.trim().toLowerCase();
-  const filtered = normalized
-    ? allTrips.filter((t) =>
-        (t.destination || "").toLowerCase().includes(normalized)
-      )
-    : allTrips;
+  const f = filter.toLowerCase();
+  const filtered = allTrips.filter(t =>
+    t.destination.toLowerCase().includes(f)
+  );
 
   if (!filtered.length) {
-    tripsList.innerHTML =
-      '<p style="color:#9ca3af;font-size:.85rem;">Nessun viaggio trovato. Aggiungine uno sopra 👆</p>';
+    tripsList.innerHTML = `<p style="color:#9ca3af;">Nessun viaggio trovato.</p>`;
     return;
   }
 
-  filtered.forEach((trip) => {
-    tripsList.appendChild(renderTripCard(trip));
-  });
+  filtered.forEach(t => tripsList.appendChild(renderTripCard(t)));
 }
 
-// Listener realtime Firestore
+/* ------------------ FIRESTORE REALTIME ------------------ */
 function subscribeTrips() {
   const q = query(tripsCol, orderBy("createdAt", "desc"));
 
-  onSnapshot(
-    q,
-    (snapshot) => {
-      allTrips = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data()
-      }));
-      renderTrips(searchInput.value);
-    },
-    (err) => {
-      console.error("Errore snapshot:", err);
-    }
-  );
+  onSnapshot(q, snapshot => {
+    allTrips = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderTrips(searchInput.value);
+  });
 }
 
-// Submit form
-tripForm.addEventListener("submit", async (e) => {
+subscribeTrips();
+
+/* ------------------ FORM SUBMIT ------------------ */
+tripForm.addEventListener("submit", async e => {
   e.preventDefault();
 
-  const destination = document.getElementById("destination").value.trim();
-  const date = document.getElementById("date").value.trim();
-  const time = document.getElementById("time").value.trim();
-  const airline = document.getElementById("airline").value.trim();
-  const flightPriceValue = document.getElementById("flightPrice").value;
-  const hotel = document.getElementById("hotel").value.trim();
-  const hotelPriceValue = document.getElementById("hotelPrice").value;
-  const notes = document.getElementById("notes").value.trim();
+  const destination = destination.value.trim();
+  if (!destination) return showToast("Inserisci una destinazione", "error");
 
-  if (!destination) {
-    alert("Inserisci almeno una destinazione.");
-    return;
-  }
+  const data = {
+    destination,
+    date: date.value.trim(),
+    time: time.value.trim(),
+    airline: airline.value.trim(),
+    flightPrice: flightPrice.value ? Number(flightPrice.value) : null,
+    hotel: hotel.value.trim(),
+    hotelPrice: hotelPrice.value ? Number(hotelPrice.value) : null,
+    notes: notes.value.trim(),
+    createdAt: Date.now()
+  };
 
-  const flightPrice = flightPriceValue ? Number(flightPriceValue) : null;
-  const hotelPrice = hotelPriceValue ? Number(hotelPriceValue) : null;
-
-  try {
-    await addDoc(tripsCol, {
-      destination,
-      date,
-      time,
-      airline,
-      flightPrice,
-      hotel,
-      hotelPrice,
-      notes,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    });
-
-    tripForm.reset();
-  } catch (err) {
-    console.error("Errore salvataggio:", err);
-    alert("Errore durante il salvataggio del viaggio.");
-  }
+  await addDoc(tripsCol, data);
+  tripForm.reset();
+  showToast("Viaggio salvato!");
 });
 
-
-// Ricerca live
-searchInput.addEventListener("input", (e) => {
-  renderTrips(e.target.value);
-});
-
-// Avvio
-subscribeTrips();
+/* ------------------ SEARCH ------------------ */
+searchInput.addEventListener("input", e => renderTrips(e.target.value));
