@@ -8,34 +8,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <!-- Leaflet per mappe -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <!-- Service Worker per offline support -->
-  <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <header class="topbar">
     <div class="logo">Cerca<span>Viaggi</span></div>
+
     <div class="header-controls">
-      <button id="theme-toggle" class="theme-toggle" aria-label="Cambia tema" title="Cambia tema">🌙</button>
-      <button id="export-btn" class="export-btn" aria-label="Esporta dati" title="Esporta in CSV">📥</button>
+      <button class="theme-toggle" id="themeToggle">🌙</button>
+      <button class="export-btn" id="exportBtn">⬇️</button>
     </div>
   </header>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="toast"></div>
-
   <main class="container">
-    <!-- Form Sezione -->
     <section class="search-card">
       <h1>Trova il tuo prossimo viaggio</h1>
       <p class="subtitle">Salva e cerca idee di viaggio da qualsiasi dispositivo.</p>
 
       <form id="trip-form" class="form-grid">
+
         <div class="form-group">
-          <label for="destination">Destinazione *</label>
-          <input type="text" id="destination" placeholder="Es. Tokyo, Parigi..." required minlength="2" />
-          <span class="error-message" id="destination-error"></span>
+          <label for="destination">Destinazione</label>
+          <input type="text" id="destination" placeholder="Es. Tokyo, Parigi..." required />
         </div>
 
         <div class="form-group">
@@ -55,8 +49,7 @@
 
         <div class="form-group">
           <label for="flightPrice">Prezzo volo (€)</label>
-          <input type="number" id="flightPrice" min="0" placeholder="Es. 650" step="0.01" />
-          <span class="error-message" id="flightPrice-error"></span>
+          <input type="number" id="flightPrice" min="0" placeholder="Es. 650" />
         </div>
 
         <div class="form-group">
@@ -66,106 +59,46 @@
 
         <div class="form-group">
           <label for="hotelPrice">Prezzo hotel (€)</label>
-          <input type="number" id="hotelPrice" min="0" placeholder="Es. 1200" step="0.01" />
-          <span class="error-message" id="hotelPrice-error"></span>
-        </div>
-
-        <div class="form-group">
-          <label for="photos">Foto viaggio</label>
-          <input type="file" id="photos" accept="image/*" multiple />
-          <span class="info-message">Carica fino a 5 foto (max 5MB per foto)</span>
+          <input type="number" id="hotelPrice" min="0" placeholder="Es. 1200" />
         </div>
 
         <div class="form-group full">
           <label for="notes">Note</label>
-          <textarea id="notes" rows="2" placeholder="Appunti, idee, voli, hotel..." maxlength="500"></textarea>
-          <span class="char-count"><span id="char-count">0</span>/500</span>
+          <textarea id="notes" rows="2" placeholder="Appunti, idee, voli, hotel..."></textarea>
         </div>
 
-        <button type="submit" class="btn-primary full" id="submit-btn">Salva viaggio</button>
-        <button type="button" class="btn-secondary full" id="cancel-edit-btn" style="display:none;">Annulla modifica</button>
+        <button type="submit" class="btn-primary full">Salva viaggio</button>
       </form>
     </section>
 
-    <!-- Filtri Avanzati -->
     <section class="search-card">
-      <h2>Ricerca e Filtri Avanzati</h2>
-      <div class="filters-grid">
-        <div class="form-group">
-          <label for="search-input">Filtra per destinazione</label>
-          <input
-            type="text"
-            id="search-input"
-            class="search-input"
-            placeholder="Digita la destinazione..."
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="filter-price-min">Prezzo minimo (€)</label>
-          <input type="number" id="filter-price-min" min="0" placeholder="0" step="10" />
-        </div>
-
-        <div class="form-group">
-          <label for="filter-price-max">Prezzo massimo (€)</label>
-          <input type="number" id="filter-price-max" min="0" placeholder="10000" step="10" />
-        </div>
-
-        <div class="form-group">
-          <label for="filter-date-from">Data da</label>
-          <input type="date" id="filter-date-from" />
-        </div>
-
-        <div class="form-group">
-          <label for="filter-date-to">Data a</label>
-          <input type="date" id="filter-date-to" />
-        </div>
-
-        <div class="form-group">
-          <label for="sort-by">Ordina per</label>
-          <select id="sort-by">
-            <option value="date-desc">Data (più recente)</option>
-            <option value="date-asc">Data (più vecchio)</option>
-            <option value="destination-asc">Destinazione (A-Z)</option>
-            <option value="destination-desc">Destinazione (Z-A)</option>
-            <option value="price-asc">Prezzo (crescente)</option>
-            <option value="price-desc">Prezzo (decrescente)</option>
-          </select>
-        </div>
-      </div>
-      <button type="button" class="btn-secondary" id="clear-filters-btn">Ripristina filtri</button>
+      <h2>Cerca tra i tuoi viaggi</h2>
+      <input type="text" id="search-input" class="search-input" placeholder="Filtra per destinazione..." />
     </section>
 
-    <!-- Lista Viaggi -->
-    <section class="trips-list" id="trips-list">
-      <!-- Le card dei viaggi verranno inserite qui da JS -->
-    </section>
+    <section class="trips-list" id="trips-list"></section>
   </main>
-
-  <!-- Modal per visualizzazione foto -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <button class="modal-close" id="modal-close">&times;</button>
-      <div id="modal-body"></div>
-    </div>
-  </div>
-
-  <!-- Modal per mappa -->
-  <div id="map-modal" class="modal">
-    <div class="modal-content modal-large">
-      <button class="modal-close" id="map-modal-close">&times;</button>
-      <h2 id="map-title"></h2>
-      <div id="map" style="height: 400px; border-radius: 12px; margin-top: 1rem;"></div>
-    </div>
-  </div>
 
   <footer class="footer">
     <span>Made with MP & Firebase · Deploy on Github Pages</span>
   </footer>
 
-  <!-- Firebase SDK v9 (modular) -->
+  <!-- Modale foto -->
+  <div class="modal" id="photoModal">
+    <div class="modal-content modal-large">
+      <button class="modal-close" id="closePhotoModal">✕</button>
+      <div class="carousel">
+        <button class="carousel-btn" id="prevPhoto">‹</button>
+        <img id="carouselImg" class="carousel-img" src="" alt="Foto viaggio">
+        <button class="carousel-btn" id="nextPhoto">›</button>
+      </div>
+      <div class="carousel-counter" id="carouselCounter"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
   <script type="module" src="app.js"></script>
-  <!-- Leaflet per mappe -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </body>
 </html>
