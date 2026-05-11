@@ -13,14 +13,15 @@
 <body>
   <header class="topbar">
     <div class="logo">Cerca<span>Viaggi</span></div>
-
     <div class="header-controls">
       <button class="theme-toggle" id="themeToggle">🌙</button>
-      <button class="export-btn" id="exportBtn">⬇️</button>
+      <button class="export-btn" id="exportBtn" title="Esporta JSON">⬇️</button>
     </div>
   </header>
 
   <main class="container">
+
+    <!-- FORM AGGIUNTA -->
     <section class="search-card">
       <h1>Trova il tuo prossimo viaggio</h1>
       <p class="subtitle">Salva e cerca idee di viaggio da qualsiasi dispositivo.</p>
@@ -28,7 +29,7 @@
       <form id="trip-form" class="form-grid">
 
         <div class="form-group">
-          <label for="destination">Destinazione</label>
+          <label for="destination">Destinazione *</label>
           <input type="text" id="destination" placeholder="Es. Tokyo, Parigi..." required />
         </div>
 
@@ -67,23 +68,93 @@
           <textarea id="notes" rows="2" placeholder="Appunti, idee, voli, hotel..."></textarea>
         </div>
 
-        <button type="submit" class="btn-primary full">Salva viaggio</button>
+        <div class="form-group full">
+          <label for="photos">📷 Foto (max 6)</label>
+          <input type="file" id="photos" accept="image/*" multiple class="file-input" />
+          <div id="photo-preview" class="photo-preview-row"></div>
+        </div>
+
+        <button type="submit" class="btn-primary full">✈️ Salva viaggio</button>
       </form>
     </section>
 
-    <section class="search-card">
-      <h2>Cerca tra i tuoi viaggi</h2>
-      <input type="text" id="search-input" class="search-input" placeholder="Filtra per destinazione..." />
+    <!-- SEARCH + SORT -->
+    <section class="search-card search-controls">
+      <div class="search-row">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" class="search-input" placeholder="Cerca destinazione, hotel, note..." />
+        </div>
+        <select id="sort-select" class="sort-select">
+          <option value="date_desc">🕐 Più recenti</option>
+          <option value="date_asc">🕐 Più vecchi</option>
+          <option value="price_asc">💰 Prezzo ↑</option>
+          <option value="price_desc">💰 Prezzo ↓</option>
+          <option value="alpha">🔤 A-Z</option>
+        </select>
+      </div>
+      <div class="stats-row">
+        <span id="trips-counter" class="trips-counter"></span>
+        <span id="total-budget" class="total-budget"></span>
+      </div>
     </section>
 
+    <!-- LISTA VIAGGI -->
     <section class="trips-list" id="trips-list"></section>
   </main>
 
   <footer class="footer">
-    <span>Made with MP & Firebase · Deploy on Github Pages</span>
+    <span>Made with MP &amp; Firebase · Deploy on Github Pages</span>
   </footer>
 
-  <!-- Modale foto -->
+  <!-- MODAL MODIFICA -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeEditModal">✕</button>
+      <h2 style="margin:0 0 1rem">✏️ Modifica viaggio</h2>
+      <form id="edit-form" class="form-grid">
+        <div class="form-group">
+          <label>Destinazione *</label>
+          <input type="text" id="edit-destination" required />
+        </div>
+        <div class="form-group">
+          <label>Periodo</label>
+          <input type="text" id="edit-date" />
+        </div>
+        <div class="form-group">
+          <label>Orari volo</label>
+          <input type="text" id="edit-time" />
+        </div>
+        <div class="form-group">
+          <label>Compagnia aerea</label>
+          <input type="text" id="edit-airline" />
+        </div>
+        <div class="form-group">
+          <label>Prezzo volo (€)</label>
+          <input type="number" id="edit-flightPrice" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Hotel</label>
+          <input type="text" id="edit-hotel" />
+        </div>
+        <div class="form-group">
+          <label>Prezzo hotel (€)</label>
+          <input type="number" id="edit-hotelPrice" min="0" />
+        </div>
+        <div class="form-group full">
+          <label>Note</label>
+          <textarea id="edit-notes" rows="2"></textarea>
+        </div>
+        <div class="form-group full">
+          <label>📷 Aggiungi foto</label>
+          <input type="file" id="edit-photos" accept="image/*" multiple class="file-input" />
+        </div>
+        <button type="submit" class="btn-primary full">💾 Salva modifiche</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FOTO -->
   <div class="modal" id="photoModal">
     <div class="modal-content modal-large">
       <button class="modal-close" id="closePhotoModal">✕</button>
@@ -100,5 +171,23 @@
   <div id="toast" class="toast"></div>
 
   <script type="module" src="app.js"></script>
+
+  <!-- Preview foto nel form -->
+  <script>
+    document.getElementById("photos").addEventListener("change", function () {
+      const preview = document.getElementById("photo-preview");
+      preview.innerHTML = "";
+      Array.from(this.files).slice(0, 6).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.className = "preview-thumb";
+          preview.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  </script>
 </body>
 </html>
